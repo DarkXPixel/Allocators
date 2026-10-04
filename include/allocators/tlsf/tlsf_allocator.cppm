@@ -10,6 +10,7 @@ module;
 export module darkallocators:tlsf;
 
 import :utility;
+import :allocator_concept;
 
 namespace darkallocators {
 
@@ -104,16 +105,9 @@ static_assert(std::has_single_bit(MIN_BLOCK_SIZE));
 static_assert(MIN_BLOCK_SIZE >= sizeof(void *) * 2);
 static_assert(HEADER_SIZE % ALIGNMENT == 0);
 
-template <typename T>
-concept AllocatorConcept =
-    requires(void *ptr, std::size_t size, std::size_t align) {
-      { T::allocate(size, align) } -> std::same_as<void *>;
-      { T::deallocate(ptr, size) } -> std::same_as<void>;
-    };
-
 export template <AllocatorConcept allocator> class TLSFAllocator {
 public:
-  TLSFAllocator() noexcept {}
+  TLSFAllocator(allocator &alloc) noexcept : alloc_(alloc) {}
   ~TLSFAllocator() { free_all_pool(); }
 
   bool grow(std::size_t min_size = 4096) {
@@ -404,7 +398,7 @@ private:
 
     const std::size_t total = pool_struct_size + sizeof(BlockHeader) +
                               pool_size + sizeof(BlockHeader);
-    void *memory = allocator::allocate(total, alignof(std::max_align_t));
+    void *memory = alloc_.allocate(total, alignof(std::max_align_t));
     if (memory == nullptr) [[unlikely]] {
       return false;
     }
@@ -440,7 +434,7 @@ private:
     TLSFPool *pool = pool_list_;
     while (pool != nullptr) {
       TLSFPool *next = pool->next;
-      allocator::deallocate(pool->memory, pool->size);
+      alloc_.deallocate(pool->memory, pool->size);
       pool = next;
     }
     pool_list_ = nullptr;
@@ -448,5 +442,7 @@ private:
 
   TLSFControl control_;
   TLSFPool *pool_list_{nullptr};
+
+  allocator &alloc_;
 };
 } // namespace darkallocators

@@ -9,7 +9,6 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 
-
 add_library(DarkAllocators)
 
 
@@ -20,7 +19,9 @@ target_sources(DarkAllocators PUBLIC
             include/allocators/darkallocators.cppm
             include/allocators/os_allocator.cppm
             include/allocators/utility.cppm
-            include/allocators/tlsf/tlsf_allocator.cppm)
+            include/allocators/tlsf/tlsf_allocator.cppm
+            include/allocators/allocator_concept.cppm
+            include/allocators/linear/fixed_linear_allocator.cppm)
 
 add_executable(example example/main.cpp)
 

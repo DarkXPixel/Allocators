@@ -107,7 +107,7 @@ static_assert(HEADER_SIZE % ALIGNMENT == 0);
 
 export template <AllocatorConcept allocator> class TLSFAllocator {
 public:
-  TLSFAllocator(allocator &alloc) noexcept : alloc_(alloc) {}
+  explicit TLSFAllocator(allocator &alloc) noexcept : alloc_(alloc) {}
   ~TLSFAllocator() { free_all_pool(); }
 
   bool grow(std::size_t min_size = 4096) {
